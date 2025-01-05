@@ -1,18 +1,32 @@
 import { Card } from "@/components/ui/card";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { format } from 'date-fns';
 
 interface PaymentCardProps {
   annualPaymentStatus?: 'completed' | 'pending';
   emergencyCollectionStatus?: 'completed' | 'pending';
   emergencyCollectionAmount?: number;
+  annualPaymentDueDate?: string;
+  emergencyCollectionDueDate?: string;
 }
 
 const PaymentCard = ({ 
   annualPaymentStatus = 'pending',
   emergencyCollectionStatus = 'pending',
-  emergencyCollectionAmount = 0
+  emergencyCollectionAmount = 0,
+  annualPaymentDueDate,
+  emergencyCollectionDueDate
 }: PaymentCardProps) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Not set';
+    try {
+      return format(new Date(dateString), 'MMM do, yyyy');
+    } catch (e) {
+      return 'Invalid date';
+    }
+  };
+
   return (
     <Card className="dashboard-card">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -22,7 +36,9 @@ const PaymentCard = ({
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-2xl font-bold text-white">£40</p>
-              <p className="text-sm text-dashboard-muted">Due: Jan 1st, 2025</p>
+              <p className="text-sm text-dashboard-muted">
+                Due: {formatDate(annualPaymentDueDate)}
+              </p>
             </div>
             <div className="w-16 h-16">
               <CircularProgressbar
@@ -40,7 +56,12 @@ const PaymentCard = ({
           <div className="text-sm text-dashboard-text">
             {annualPaymentStatus === 'completed' 
               ? 'Payment completed' 
-              : 'Payment pending'}
+              : (
+                <div className="space-y-1">
+                  <p>Payment pending</p>
+                  <p className="text-dashboard-muted">Please complete your payment before the due date</p>
+                </div>
+              )}
           </div>
         </div>
 
@@ -52,7 +73,9 @@ const PaymentCard = ({
               <p className="text-2xl font-bold text-white">
                 £{emergencyCollectionAmount}
               </p>
-              <p className="text-sm text-dashboard-muted">One-time payment</p>
+              <p className="text-sm text-dashboard-muted">
+                Due: {formatDate(emergencyCollectionDueDate)}
+              </p>
             </div>
             <div className="w-16 h-16">
               <CircularProgressbar
@@ -70,7 +93,12 @@ const PaymentCard = ({
           <div className="text-sm text-dashboard-text">
             {emergencyCollectionStatus === 'completed' 
               ? 'Payment completed' 
-              : 'Payment pending'}
+              : (
+                <div className="space-y-1">
+                  <p>Payment pending</p>
+                  <p className="text-dashboard-muted">One-time emergency collection payment required</p>
+                </div>
+              )}
           </div>
         </div>
       </div>

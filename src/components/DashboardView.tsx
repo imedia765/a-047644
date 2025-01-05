@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import MemberProfileCard from './MemberProfileCard';
@@ -9,7 +9,6 @@ import { Users } from 'lucide-react';
 
 const DashboardView = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const { data: memberProfile, isError } = useQuery({
     queryKey: ['memberProfile'],
@@ -33,7 +32,6 @@ const DashboardView = () => {
         .from('members')
         .select('*');
       
-      // Use the same OR condition approach as MembersList for more flexible matching
       query = query.or(`member_number.eq.${memberNumber},auth_user_id.eq.${session.user.id}`);
       
       const { data, error } = await query.maybeSingle();
@@ -62,6 +60,9 @@ const DashboardView = () => {
     },
   });
 
+  const arePaymentsCompleted = memberProfile?.yearly_payment_status === 'completed' && 
+    memberProfile?.emergency_collection_status === 'completed';
+
   return (
     <>
       <header className="mb-8">
@@ -77,26 +78,30 @@ const DashboardView = () => {
           annualPaymentStatus={(memberProfile?.yearly_payment_status || 'pending') as 'completed' | 'pending'}
           emergencyCollectionStatus={(memberProfile?.emergency_collection_status || 'pending') as 'completed' | 'pending'}
           emergencyCollectionAmount={memberProfile?.emergency_collection_amount}
-        />
-
-        {/* Payment Summary */}
-        <TotalCount 
-          items={[
-            {
-              count: 40,
-              label: "Annual Payment",
-              icon: <Users className="h-4 w-4 text-dashboard-accent1" />
-            },
-            {
-              count: memberProfile?.emergency_collection_amount || 0,
-              label: "Emergency Collection",
-              icon: <Users className="h-4 w-4 text-dashboard-accent2" />
-            }
-          ]}
+          annualPaymentDueDate={memberProfile?.yearly_payment_due_date}
+          emergencyCollectionDueDate={memberProfile?.emergency_collection_due_date}
         />
 
         {/* Monthly Chart */}
         <MonthlyChart />
+
+        {/* Payment Summary - Only show if payments are completed */}
+        {arePaymentsCompleted && (
+          <TotalCount 
+            items={[
+              {
+                count: 40,
+                label: "Annual Payment",
+                icon: <Users className="h-4 w-4 text-dashboard-accent1" />
+              },
+              {
+                count: memberProfile?.emergency_collection_amount || 0,
+                label: "Emergency Collection",
+                icon: <Users className="h-4 w-4 text-dashboard-accent2" />
+              }
+            ]}
+          />
+        )}
       </div>
     </>
   );
