@@ -5,6 +5,7 @@ import MemberProfileCard from './MemberProfileCard';
 import MonthlyChart from './MonthlyChart';
 import PaymentCard from './PaymentCard';
 import TotalCount from './TotalCount';
+import PaymentHistoryTable from './PaymentHistoryTable';
 import { Users } from 'lucide-react';
 
 const DashboardView = () => {
@@ -73,7 +74,6 @@ const DashboardView = () => {
       <div className="grid gap-6">
         <MemberProfileCard memberProfile={memberProfile} />
         
-        {/* Payment Card */}
         <PaymentCard 
           annualPaymentStatus={(memberProfile?.yearly_payment_status || 'pending') as 'completed' | 'pending'}
           emergencyCollectionStatus={(memberProfile?.emergency_collection_status || 'pending') as 'completed' | 'pending'}
@@ -82,10 +82,8 @@ const DashboardView = () => {
           emergencyCollectionDueDate={memberProfile?.emergency_collection_due_date}
         />
 
-        {/* Monthly Chart */}
         <MonthlyChart />
 
-        {/* Payment Summary - Only show if payments are completed */}
         {arePaymentsCompleted && (
           <TotalCount 
             items={[
@@ -102,6 +100,8 @@ const DashboardView = () => {
             ]}
           />
         )}
+
+        <PaymentHistoryTable />
       </div>
     </>
   );
