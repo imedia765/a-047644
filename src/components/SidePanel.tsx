@@ -4,7 +4,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   LayoutDashboard, 
   Users, 
-  UserCog,
   History,
   Settings,
   Wallet,
@@ -67,19 +66,10 @@ const SidePanel = ({ onTabChange, userRole }: SidePanelProps) => {
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-2"
-                onClick={() => onTabChange('collectors')}
-              >
-                <UserCog className="h-4 w-4" />
-                Collectors
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-2"
                 onClick={() => onTabChange('financials')}
               >
                 <Wallet className="h-4 w-4" />
-                Financials
+                Collectors & Financials
               </Button>
 
               <Button
