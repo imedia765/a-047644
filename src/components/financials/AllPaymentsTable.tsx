@@ -77,9 +77,7 @@ const AllPaymentsTable = ({ showHistory = false }: AllPaymentsTableProps) => {
   return (
     <Card className="bg-dashboard-card border-dashboard-accent1/20">
       <div className="p-6">
-        <h2 className="text-xl font-medium text-white mb-4">
-          {showHistory ? "Payment History & Approvals" : "Payment Requests"}
-        </h2>
+        <h2 className="text-xl font-medium text-white mb-4">Payment History & Approvals</h2>
         <div className="rounded-md border border-white/10">
           <Table>
             <TableHeader>
