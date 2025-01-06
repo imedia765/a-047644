@@ -18,12 +18,11 @@ const CollectorFinancialsView = () => {
 
       <Card className="bg-dashboard-card border-dashboard-accent1/20">
         <Tabs defaultValue="overview" className="p-6" onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-5 gap-4 bg-dashboard-dark">
+          <TabsList className="grid grid-cols-4 gap-4 bg-dashboard-dark">
             <TabsTrigger value="overview">Payment Overview</TabsTrigger>
             <TabsTrigger value="collectors">Collector Management</TabsTrigger>
-            <TabsTrigger value="approvals">Payment Approvals</TabsTrigger>
+            <TabsTrigger value="payments">All Payments</TabsTrigger>
             <TabsTrigger value="summaries">Collector Summaries</TabsTrigger>
-            <TabsTrigger value="history">Payment History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
@@ -34,16 +33,12 @@ const CollectorFinancialsView = () => {
             <CollectorsList />
           </TabsContent>
 
-          <TabsContent value="approvals" className="mt-6">
-            <AllPaymentsTable />
+          <TabsContent value="payments" className="mt-6">
+            <AllPaymentsTable showHistory={true} />
           </TabsContent>
 
           <TabsContent value="summaries" className="mt-6">
             <CollectorsSummary />
-          </TabsContent>
-
-          <TabsContent value="history" className="mt-6">
-            <AllPaymentsTable />
           </TabsContent>
         </Tabs>
       </Card>
