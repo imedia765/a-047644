@@ -4,11 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PlayCircle, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { DebugConsole } from '../logs/DebugConsole';
 import SystemCheckProgress from './SystemCheckProgress';
 
 const TestRunner = () => {
-  const [testLogs, setTestLogs] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTest, setCurrentTest] = useState('');
@@ -16,9 +14,19 @@ const TestRunner = () => {
   const runTestsMutation = useMutation({
     mutationFn: async () => {
       setIsRunning(true);
-      setTestLogs(['Starting test run...']);
       setProgress(0);
       setCurrentTest('Initializing tests...');
+
+      // Broadcast initial message to debug channel
+      await supabase
+        .channel('debug-logs')
+        .send({
+          type: 'broadcast',
+          event: 'debug-log',
+          payload: {
+            message: 'Starting test run...'
+          }
+        });
 
       const { data, error } = await supabase.functions.invoke('run-tests', {
         body: { command: 'test' }
@@ -28,14 +36,32 @@ const TestRunner = () => {
       return data;
     },
     onSuccess: (data) => {
-      setTestLogs(prev => [...prev, 'Tests completed successfully']);
       setProgress(100);
       setCurrentTest('All tests complete');
+      // Broadcast success message
+      supabase
+        .channel('debug-logs')
+        .send({
+          type: 'broadcast',
+          event: 'debug-log',
+          payload: {
+            message: 'Tests completed successfully'
+          }
+        });
     },
     onError: (error) => {
-      setTestLogs(prev => [...prev, `Error running tests: ${error.message}`]);
       setProgress(0);
       setCurrentTest('Test run failed');
+      // Broadcast error message
+      supabase
+        .channel('debug-logs')
+        .send({
+          type: 'broadcast',
+          event: 'debug-log',
+          payload: {
+            message: `Error running tests: ${error.message}`
+          }
+        });
     },
     onSettled: () => {
       setIsRunning(false);
@@ -49,9 +75,18 @@ const TestRunner = () => {
       const channel = supabase
         .channel('test-logs')
         .on('broadcast', { event: 'test-log' }, ({ payload }) => {
-          setTestLogs(prev => [...prev, payload.message]);
           setProgress(payload.progress || progress);
           setCurrentTest(payload.currentTest || currentTest);
+          // Broadcast to debug channel
+          supabase
+            .channel('debug-logs')
+            .send({
+              type: 'broadcast',
+              event: 'debug-log',
+              payload: {
+                message: payload.message
+              }
+            });
         })
         .subscribe();
 
@@ -95,8 +130,6 @@ const TestRunner = () => {
           </AlertDescription>
         </Alert>
       )}
-
-      <DebugConsole logs={testLogs} />
     </section>
   );
 };
