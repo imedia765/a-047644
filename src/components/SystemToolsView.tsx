@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SystemHealthCheck from './system/SystemHealthCheck';
 import RoleManagementCard from './system/RoleManagementCard';
 import GitOperationsCard from './system/GitOperationsCard';
+import TestRunner from './system/TestRunner';
 
 const SystemToolsView = () => {
   const { toast } = useToast();
@@ -51,6 +52,7 @@ const SystemToolsView = () => {
       <div className="grid gap-6">
         <SystemHealthCheck />
         <GitOperationsCard />
+        <TestRunner />
         <RoleManagementCard />
       </div>
     </div>
