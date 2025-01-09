@@ -1,13 +1,15 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import LoginForm from '../LoginForm';
+import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
+import LoginForm from '../LoginForm';
 
-jest.mock('../login/useLoginForm', () => ({
+// Mock the useLoginForm hook
+vi.mock('../login/useLoginForm', () => ({
   useLoginForm: () => ({
     memberNumber: '',
-    setMemberNumber: jest.fn(),
+    setMemberNumber: vi.fn(),
     loading: false,
-    handleLogin: jest.fn()
+    handleLogin: vi.fn()
   })
 }));
 
@@ -19,25 +21,21 @@ describe('LoginForm Component', () => {
   });
 
   it('updates member number input', () => {
-    render(<LoginForm />);
-    const input = screen.getByLabelText(/member number/i) as HTMLInputElement;
+    const { getByLabelText } = render(<LoginForm />);
+    const input = getByLabelText(/member number/i) as HTMLInputElement;
     fireEvent.change(input, { target: { value: '12345' } });
-    expect(input).toHaveValue('12345');
+    expect(input.value).toBe('12345');
   });
 
   it('submits the form', () => {
-    const mockHandleLogin = jest.fn();
-    jest.mock('./login/useLoginForm', () => ({
-      useLoginForm: () => ({
-        memberNumber: '',
-        setMemberNumber: jest.fn(),
-        loading: false,
-        handleLogin: mockHandleLogin
-      })
+    const mockHandleLogin = vi.fn();
+    vi.mocked(LoginForm).mockImplementation(() => ({
+      handleLogin: mockHandleLogin
     }));
 
     render(<LoginForm />);
-    fireEvent.submit(screen.getByRole('form'));
+    const form = screen.getByRole('form');
+    fireEvent.submit(form);
     expect(mockHandleLogin).toHaveBeenCalled();
   });
 });

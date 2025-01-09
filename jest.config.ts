@@ -28,6 +28,9 @@ const config: Config.InitialOptions = {
     '/src/vite-env.d.ts',
     '/src/main.tsx',
   ],
+  testEnvironmentOptions: {
+    customExportConditions: [''],
+  },
 };
 
 export default config;
