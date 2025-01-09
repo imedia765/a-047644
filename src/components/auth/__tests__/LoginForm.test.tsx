@@ -4,12 +4,13 @@ import '@testing-library/jest-dom';
 import LoginForm from '../LoginForm';
 
 // Mock the useLoginForm hook
+const mockHandleLogin = vi.fn();
 vi.mock('../login/useLoginForm', () => ({
   useLoginForm: () => ({
     memberNumber: '',
     setMemberNumber: vi.fn(),
     loading: false,
-    handleLogin: vi.fn()
+    handleLogin: mockHandleLogin
   })
 }));
 
@@ -28,11 +29,6 @@ describe('LoginForm Component', () => {
   });
 
   it('submits the form', () => {
-    const mockHandleLogin = vi.fn();
-    vi.mocked(LoginForm).mockImplementation(() => ({
-      handleLogin: mockHandleLogin
-    }));
-
     render(<LoginForm />);
     const form = screen.getByRole('form');
     fireEvent.submit(form);
