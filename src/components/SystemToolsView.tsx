@@ -51,8 +51,8 @@ const SystemToolsView = () => {
 
       <div className="grid gap-6">
         <SystemHealthCheck />
-        <GitOperationsCard />
         <TestRunner />
+        <GitOperationsCard />
         <RoleManagementCard />
       </div>
     </div>
