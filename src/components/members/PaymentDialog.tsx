@@ -5,6 +5,9 @@ import BankDetails from "./payment/BankDetails";
 import { useState } from "react";
 import { Collector } from "@/types/collector";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PaymentDialogProps {
   isOpen: boolean;
@@ -24,11 +27,53 @@ const PaymentDialog = ({
   collectorInfo 
 }: PaymentDialogProps) => {
   const [selectedPaymentType, setSelectedPaymentType] = useState<string>('yearly');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'cash' | 'bank_transfer'>('bank_transfer');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'bank_transfer' | 'cash'>('bank_transfer');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = () => {
-    // Handle the payment submission
-    onClose();
+  const handleSubmit = async () => {
+    if (!collectorInfo?.id) {
+      toast({
+        title: "Error",
+        description: "No collector information available",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('payment_requests')
+        .insert({
+          member_id: memberId,
+          member_number: memberNumber,
+          payment_type: selectedPaymentType,
+          payment_method: selectedPaymentMethod,
+          status: 'pending',
+          collector_id: collectorInfo.id,
+          amount: selectedPaymentType === 'yearly' ? 40 : 20
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Payment request submitted successfully",
+      });
+
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['payment-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['member-payments'] });
+      
+      onClose();
+    } catch (error: any) {
+      console.error('Error submitting payment:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit payment request",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
