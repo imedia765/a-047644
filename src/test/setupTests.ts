@@ -84,7 +84,7 @@ afterEach(() => {
 
 // Add custom matchers
 expect.extend({
-  toHaveBeenCalledWithMatch(received: any, ...expected: any[]) {
+  toHaveBeenCalledWithMatch(received, ...expected) {
     const pass = this.equals(received.mock.calls[0], expected);
     return {
       pass,
@@ -97,7 +97,7 @@ expect.extend({
 declare global {
   namespace Vi {
     interface Assertion {
-      toHaveBeenCalledWithMatch: (...args: any[]) => boolean;
+      toHaveBeenCalledWithMatch(...args: any[]): boolean;
     }
   }
 }
