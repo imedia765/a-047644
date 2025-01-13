@@ -76,7 +76,7 @@ afterEach(() => {
 
 // Add custom matchers
 expect.extend({
-  toHaveBeenCalledWithMatch(received, expected) {
+  toHaveBeenCalledWithMatch(received: jest.Mock, expected: unknown) {
     const pass = this.equals(received.mock.calls[0], [expected]);
     return {
       pass,
