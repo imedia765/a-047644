@@ -45,9 +45,18 @@ const PaymentDialog = ({
       return;
     }
 
+    // Fixed amount for yearly payment
     const amount = selectedPaymentType === 'yearly' ? 40 : 20;
 
     try {
+      console.log('Submitting payment request:', {
+        memberId,
+        memberNumber,
+        paymentType: selectedPaymentType,
+        paymentMethod: selectedPaymentMethod,
+        amount
+      });
+
       const { data, error } = await supabase
         .from('payment_requests')
         .insert({
@@ -62,18 +71,23 @@ const PaymentDialog = ({
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Payment submission error:', error);
+        throw error;
+      }
 
+      console.log('Payment request created:', data);
       setPaymentRef(data.id);
       setPaymentSuccess(true);
       setShowSplash(true);
 
+      // Invalidate queries after successful payment
+      await queryClient.invalidateQueries({ queryKey: ['payment-requests'] });
+      await queryClient.invalidateQueries({ queryKey: ['member-payments'] });
+
       // Hide splash after 3 seconds and close dialog
       setTimeout(() => {
         setShowSplash(false);
-        // Invalidate relevant queries
-        queryClient.invalidateQueries({ queryKey: ['payment-requests'] });
-        queryClient.invalidateQueries({ queryKey: ['member-payments'] });
         onClose();
       }, 3000);
 
@@ -82,16 +96,16 @@ const PaymentDialog = ({
       setPaymentSuccess(false);
       setShowSplash(true);
       
+      toast({
+        title: "Payment Failed",
+        description: error.message || "Failed to submit payment request",
+        variant: "destructive"
+      });
+
       // Hide error splash after 3 seconds
       setTimeout(() => {
         setShowSplash(false);
       }, 3000);
-
-      toast({
-        title: "Error",
-        description: error.message || "Failed to submit payment request",
-        variant: "destructive"
-      });
     }
   };
 
@@ -118,6 +132,10 @@ const PaymentDialog = ({
           {selectedPaymentMethod === 'bank_transfer' && (
             <BankDetails memberNumber={memberNumber} />
           )}
+
+          <div className="text-lg font-semibold text-dashboard-highlight">
+            Amount: £{selectedPaymentType === 'yearly' ? '40.00' : '20.00'}
+          </div>
 
           <Button 
             onClick={handleSubmit}
