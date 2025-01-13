@@ -32,13 +32,15 @@ const PaymentDialog = ({
   const handleSubmit = async () => {
     try {
       const { error } = await supabase
-        .from('payments')
+        .from('payment_requests')
         .insert({
           member_id: memberId,
+          member_number: memberNumber,
           payment_type: selectedPaymentType,
           payment_method: selectedPaymentMethod,
           status: 'pending',
-          collector_id: collectorInfo?.id
+          collector_id: collectorInfo?.id,
+          amount: 0, // Required field, should be set based on payment type
         });
 
       if (error) throw error;

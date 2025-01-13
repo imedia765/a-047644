@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import { expect, afterEach, vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
+import React from 'react';
 
 // Setup a basic DOM environment for tests
 import { JSDOM } from 'jsdom';
@@ -11,7 +14,7 @@ const dom = new JSDOM('<!doctype html><html><body></body></html>', {
   resources: 'usable'
 });
 
-global.window = dom.window;
+global.window = dom.window as unknown as (Window & typeof globalThis);
 global.document = dom.window.document;
 global.navigator = {
   userAgent: 'node.js',
@@ -38,6 +41,39 @@ global.window.matchMedia = vi.fn().mockImplementation(query => ({
   removeEventListener: vi.fn(),
   dispatchEvent: vi.fn(),
 }));
+
+// Create a custom render method that includes providers
+const createTestQueryClient = () => new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
+
+interface RenderWithProvidersOptions {
+  route?: string;
+  queryClient?: QueryClient;
+}
+
+export function renderWithProviders(
+  ui: React.ReactElement,
+  { 
+    route = '/',
+    queryClient = createTestQueryClient(),
+  }: RenderWithProvidersOptions = {}
+) {
+  return {
+    ...render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[route]}>
+          {ui}
+        </MemoryRouter>
+      </QueryClientProvider>
+    ),
+    queryClient,
+  };
+}
 
 // Cleanup after each test case
 afterEach(() => {

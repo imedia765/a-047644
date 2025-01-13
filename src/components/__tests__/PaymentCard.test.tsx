@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import PaymentCard from '../PaymentCard';
 import { renderWithProviders } from '@/test/setupTests';
 
