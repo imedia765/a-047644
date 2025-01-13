@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import PaymentMethodSelector from "./payment/PaymentMethodSelector";
 import PaymentTypeSelector from "./payment/PaymentTypeSelector";
 import BankDetails from "./payment/BankDetails";
+import PaymentConfirmationSplash from "./payment/PaymentConfirmationSplash";
 import { useState } from "react";
 import { Collector } from "@/types/collector";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,9 @@ const PaymentDialog = ({
 }: PaymentDialogProps) => {
   const [selectedPaymentType, setSelectedPaymentType] = useState<string>('yearly');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'bank_transfer' | 'cash'>('bank_transfer');
+  const [showSplash, setShowSplash] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentRef, setPaymentRef] = useState<string>();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -41,8 +45,10 @@ const PaymentDialog = ({
       return;
     }
 
+    const amount = selectedPaymentType === 'yearly' ? 40 : 20;
+
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('payment_requests')
         .insert({
           member_id: memberId,
@@ -51,23 +57,36 @@ const PaymentDialog = ({
           payment_method: selectedPaymentMethod,
           status: 'pending',
           collector_id: collectorInfo.id,
-          amount: selectedPaymentType === 'yearly' ? 40 : 20
-        });
+          amount: amount
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Payment request submitted successfully",
-      });
+      setPaymentRef(data.id);
+      setPaymentSuccess(true);
+      setShowSplash(true);
 
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ['payment-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['member-payments'] });
-      
-      onClose();
+      // Hide splash after 3 seconds and close dialog
+      setTimeout(() => {
+        setShowSplash(false);
+        // Invalidate relevant queries
+        queryClient.invalidateQueries({ queryKey: ['payment-requests'] });
+        queryClient.invalidateQueries({ queryKey: ['member-payments'] });
+        onClose();
+      }, 3000);
+
     } catch (error: any) {
       console.error('Error submitting payment:', error);
+      setPaymentSuccess(false);
+      setShowSplash(true);
+      
+      // Hide error splash after 3 seconds
+      setTimeout(() => {
+        setShowSplash(false);
+      }, 3000);
+
       toast({
         title: "Error",
         description: error.message || "Failed to submit payment request",
@@ -107,6 +126,16 @@ const PaymentDialog = ({
             Submit Payment
           </Button>
         </div>
+
+        {showSplash && (
+          <PaymentConfirmationSplash
+            success={paymentSuccess}
+            paymentRef={paymentRef}
+            amount={selectedPaymentType === 'yearly' ? 40 : 20}
+            paymentType={selectedPaymentType}
+            memberNumber={memberNumber}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
