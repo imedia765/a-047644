@@ -49,11 +49,13 @@ interface RenderWithProvidersOptions {
 
 export function renderWithProviders(
   ui: React.ReactElement,
-  { 
+  options: RenderWithProvidersOptions = {}
+) {
+  const {
     route = '/',
     queryClient = createTestQueryClient(),
-  }: RenderWithProvidersOptions = {}
-) {
+  } = options;
+
   return {
     ...render(
       <QueryClientProvider client={queryClient}>
@@ -74,8 +76,8 @@ afterEach(() => {
 
 // Add custom matchers
 expect.extend({
-  toHaveBeenCalledWithMatch(received: any, ...expected: any[]) {
-    const pass = this.equals(received.mock.calls[0], expected);
+  toHaveBeenCalledWithMatch(received, expected) {
+    const pass = this.equals(received.mock.calls[0], [expected]);
     return {
       pass,
       message: () => `expected ${received} to have been called with ${expected}`,
