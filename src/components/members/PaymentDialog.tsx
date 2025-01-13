@@ -5,8 +5,6 @@ import BankDetails from "./payment/BankDetails";
 import { useState } from "react";
 import { Collector } from "@/types/collector";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface PaymentDialogProps {
   isOpen: boolean;
@@ -27,38 +25,10 @@ const PaymentDialog = ({
 }: PaymentDialogProps) => {
   const [selectedPaymentType, setSelectedPaymentType] = useState<string>('yearly');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'cash' | 'bank_transfer'>('bank_transfer');
-  const { toast } = useToast();
 
-  const handleSubmit = async () => {
-    try {
-      const { error } = await supabase
-        .from('payment_requests')
-        .insert({
-          member_id: memberId,
-          member_number: memberNumber,
-          payment_type: selectedPaymentType,
-          payment_method: selectedPaymentMethod,
-          status: 'pending',
-          collector_id: collectorInfo?.id,
-          amount: 0, // Required field, should be set based on payment type
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Payment Submitted",
-        description: "Your payment has been recorded and is pending verification.",
-      });
-
-      onClose();
-    } catch (error) {
-      console.error('Payment submission error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to submit payment. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const handleSubmit = () => {
+    // Handle the payment submission
+    onClose();
   };
 
   return (
