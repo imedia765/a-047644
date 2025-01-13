@@ -84,7 +84,7 @@ afterEach(() => {
 
 // Add custom matchers
 expect.extend({
-  toHaveBeenCalledWithMatch(received, ...expected) {
+  toHaveBeenCalledWithMatch(received: any, ...expected: any[]): { pass: boolean; message: () => string } {
     const pass = this.equals(received.mock.calls[0], expected);
     return {
       pass,
